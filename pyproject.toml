@@ -1,0 +1,18 @@
+[project]
+name = "py-pdf"
+version = "0.1.0"
+description = "PDF processing toolkits"
+readme = "README.md"
+authors = [{ name = "Jason Swift", email = "anemele@outlook.com" }]
+requires-python = ">=3.12"
+dependencies = ["pypdf>=5.1.0"]
+
+[project.scripts]
+booklet = "py_pdf.booklet.main:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = ["pytest>=8.3.4"]
