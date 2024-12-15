@@ -21,9 +21,13 @@ def main(args=None):
     input_pdf_path = args.input_pdf_path
     horizontal = args.horizontal
     output_pdf_path = "_new".join(osp.splitext(input_pdf_path))
-    if args.make:
-        make_booklet(input_pdf_path, output_pdf_path, vertical=not horizontal)
-    elif args.split:
-        split_booklet(input_pdf_path, output_pdf_path, vertical=not horizontal)
-    else:
-        parser.print_help()
+
+    try:
+        if args.make:
+            make_booklet(input_pdf_path, output_pdf_path, vertical=not horizontal)
+        elif args.split:
+            split_booklet(input_pdf_path, output_pdf_path, vertical=not horizontal)
+        else:
+            parser.print_help()
+    except Exception as e:
+        print(f"Error: {e}")

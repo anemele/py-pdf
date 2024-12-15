@@ -57,13 +57,15 @@ def make_booklet(
     reader = PdfReader(input_pdf_path)
 
     pages = list(reader.pages)
-    page0 = pages[0].mediabox
-    blank_page = PageObject.create_blank_page(None, page0.width, page0.height)
+    blank_page = PageObject.create_blank_page(
+        None, pages[0].mediabox.width, pages[0].mediabox.height
+    )
     pages = resort_to_booklet(pages, blank_page)
-    pages = [
-        merge_two_pages(pages[2 * i], pages[2 * i + 1], vertical)
-        for i in range(len(pages) // 2)
-    ]
+    reader.close()
+
+    # 此时页面数量为 4 的倍数，迭代器不会 StopIteration
+    pages = iter(pages)
+    pages = [merge_two_pages(i, next(pages), vertical) for i in pages]
 
     writer = PdfWriter()
     # writer.add_page(pages[0])
@@ -130,6 +132,8 @@ def split_booklet(
     reader = PdfReader(input_pdf_path)
 
     pages = [p for page in reader.pages for p in crop_page(page, vertical)]
+    reader.close()
+
     pages = resort_from_booklet(pages)
 
     writer = PdfWriter()
