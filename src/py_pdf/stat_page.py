@@ -1,4 +1,7 @@
+"""统计PDF文件数目和页数，支持输入文件和目录，支持 glob 。"""
+
 import argparse
+import os.path as osp
 from pathlib import Path
 from typing import Iterable
 
@@ -17,23 +20,24 @@ def get_page_num(path: Path) -> tuple[int, int]:
 def stat_pdf(paths: Iterable[Path]) -> tuple[int, int]:
     file_count = 0
     page_count = 0
-    for path in paths:
-        if path.is_file():
-            res = get_page_num(path)
-            file_count += res[0]
-            page_count += res[1]
-        else:
-            for pdffile in path.glob("**/*.pdf"):
-                res = get_page_num(pdffile)
-                file_count += res[0]
-                page_count += res[1]
+
+    def chain_files():
+        for path in paths:
+            if path.is_file():
+                yield path
+            else:
+                yield from path.glob("**/*.pdf")
+
+    for file in chain_files():
+        res = get_page_num(file)
+        file_count += res[0]
+        page_count += res[1]
+
     return file_count, page_count
 
 
 def main():
-    parser = argparse.ArgumentParser(
-        prog=__package__, description="Count pages in PDF files"
-    )
+    parser = argparse.ArgumentParser(prog=osp.basename(__file__), description=__doc__)
     parser.add_argument("path", nargs="+", type=Path, help="Paths to PDF files")
     args = parser.parse_args()
     paths: list[Path] = args.path
@@ -41,7 +45,3 @@ def main():
     file_count, page_count = stat_pdf(paths)
     print(f"Total files: {file_count}")
     print(f"Total pages: {page_count}")
-
-
-if __name__ == "__main__":
-    main()
