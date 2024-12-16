@@ -61,7 +61,6 @@ def make_booklet(
         None, pages[0].mediabox.width, pages[0].mediabox.height
     )
     pages = resort_to_booklet(pages, blank_page)
-    reader.close()
 
     # 此时页面数量为 4 的倍数，迭代器不会 StopIteration
     pages = iter(pages)
@@ -77,6 +76,7 @@ def make_booklet(
     with open(output_pdf_path, "wb") as output_file:
         writer.write(output_file)
     writer.close()
+    reader.close()
 
     return Path(output_pdf_path)
 
@@ -132,7 +132,6 @@ def split_booklet(
     reader = PdfReader(input_pdf_path)
 
     pages = [p for page in reader.pages for p in crop_page(page, vertical)]
-    reader.close()
 
     pages = resort_from_booklet(pages)
 
@@ -143,5 +142,6 @@ def split_booklet(
     with open(output_pdf_path, "wb") as output_file:
         writer.write(output_file)
     writer.close()
+    reader.close()
 
     return Path(output_pdf_path)
