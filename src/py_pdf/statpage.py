@@ -37,7 +37,10 @@ def stat_pdf(paths: Iterable[Path]) -> tuple[int, int]:
 
 
 def main():
-    parser = argparse.ArgumentParser(prog=osp.basename(__file__), description=__doc__)
+    parser = argparse.ArgumentParser(
+        prog=osp.basename(__file__).removesuffix(".py"),
+        description=__doc__,
+    )
     parser.add_argument("path", nargs="+", type=Path, help="Paths to PDF files")
     args = parser.parse_args()
     paths: list[Path] = args.path
@@ -45,3 +48,7 @@ def main():
     file_count, page_count = stat_pdf(paths)
     print(f"Total files: {file_count}")
     print(f"Total pages: {page_count}")
+
+
+if __name__ == "__main__":
+    main()
