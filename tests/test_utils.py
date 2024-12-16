@@ -1,6 +1,6 @@
 import pytest
 
-from .utils import sort_from_booklet, sort_to_booklet
+from py_pdf.utils import sort_from_booklet, sort_to_booklet
 
 
 def test_sort_from_booklet():
