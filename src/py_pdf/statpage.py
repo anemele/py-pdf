@@ -1,4 +1,6 @@
-"""统计PDF文件数目和页数，支持输入文件和目录，支持 glob 。"""
+"""统计PDF文件数目和页数，支持输入文件和目录。
+输入目录时默认搜索所有子目录：`glob: **/*.pdf`
+"""
 
 import argparse
 import os.path as osp
