@@ -1,14 +1,9 @@
-"""给PDF文件添加页码。
-添加位置为页尾居中。
-
+"""给PDF文件添加页码，添加位置为页尾居中。
 默认全文从1开始，按自然数顺序编号。
 
-支持输入配置，格式为：
-`a-b:A`
-，其中小写字母标示PDF文件的页码，大写字母标示显示的页码。
-支持多个配置，以逗号分割，格式为：
-`a-b:A,c-d:C`
-。另外支持文件配置，格式同上，支持以逗号和换行符分割。
+支持输入配置，格式为： `a-b:A` ，标示从a页到b页编号，a页编号为A，依次类推。
+支持多个配置，以逗号分割，格式为： `a-b:A,c-d:C` 。
+另外支持文件配置，格式同上，支持以逗号和换行符分割。
 
 自行保证输入合法，本程序不做验证。
 """
@@ -28,16 +23,15 @@ pdfmetrics.registerFont(TTFont("SimHei", "SimHei.ttf"))
 pdfmetrics.registerFont(TTFont("Times", "times.ttf"))
 
 
-def add_text(page: PageObject, text: str) -> PageObject:
+def add_text(page: PageObject, text: str) -> None:
     packet = io.BytesIO()
     canvas_draw = Canvas(packet, pagesize=(page.mediabox.width, page.mediabox.height))
     canvas_draw.setFont("Times", 16)
-    canvas_draw.drawString(page.mediabox.width / 2, page.mediabox.height / 15, text)
+    canvas_draw.drawString(page.mediabox.width / 2, page.mediabox.height / 18, text)
     canvas_draw.save()
 
     text_page = PdfReader(packet).pages[0]
     page.merge_page(text_page)
-    return page
 
 
 @dataclass
@@ -62,9 +56,9 @@ def add_pagenum(
     reader = PdfReader(input_file)
     writer = PdfWriter()
 
+    pages = reader.pages
     if config_str is not None:
         config_list = parse_config(config_str)
-        pages = reader.pages
         for config in config_list:
             offset = 0
             for i in range(config.pdf_start - 1, config.pdf_end):
@@ -72,10 +66,10 @@ def add_pagenum(
                 add_text(page, str(config.display_start + offset))
                 offset += 1
     else:
-        for i, page in enumerate(reader.pages):
+        for i, page in enumerate(pages):
             add_text(page, str(i + 1))
 
-    for page in reader.pages:
+    for page in pages:
         writer.add_page(page)
 
     with open(output_file, "wb") as fp:
@@ -86,13 +80,17 @@ def add_pagenum(
 
 
 def main():
-    parser = argparse.ArgumentParser(prog="addpn", description=__doc__)
+    parser = argparse.ArgumentParser(
+        prog="addpn",
+        description=__doc__,
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
     parser.add_argument("input_file", help="input PDF file")
     parser.add_argument(
-        "-c", "--config", help="page number config, format: a-b:A,c-d:C"
+        "-c", "--config", help="page number config, format: a-b:A[,c-d:C]"
     )
-    parser.add_argument("--config-file")
-
+    parser.add_argument("--config-file", help="page number config file")
+    parser.print_help
     args = parser.parse_args()
     input_file = args.input_file
     config_str = args.config

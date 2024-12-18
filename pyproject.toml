@@ -11,6 +11,7 @@ dependencies = ["pypdf>=5.1.0", "reportlab>=4.2.5"]
 booklet = "py_pdf.booklet:main"
 statpage = "py_pdf.statpage:main"
 paper = "py_pdf.paper:main"
+addpn = "py_pdf.add_pagenum:main"
 
 [build-system]
 requires = ["hatchling"]
