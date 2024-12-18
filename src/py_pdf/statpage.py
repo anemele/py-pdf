@@ -42,6 +42,7 @@ def main():
     parser = argparse.ArgumentParser(
         prog=osp.basename(__file__).removesuffix(".py"),
         description=__doc__,
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument("path", nargs="+", type=Path, help="Paths to PDF files")
     args = parser.parse_args()

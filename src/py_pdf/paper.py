@@ -1,6 +1,6 @@
 """PDF试卷转换工具。
-可以将正常顺序的文档转换成试卷，
-也可以将试卷分割成正常顺序的文档。
+
+可以将正常顺序的文档转换成试卷，也可以将试卷分割成正常顺序的文档。
 """
 # 试卷实际上就是多页合印，与小册子不同之处主要在于无需重排页面顺序。
 
@@ -64,6 +64,7 @@ def main():
     parser = argparse.ArgumentParser(
         prog=osp.basename(__file__).removesuffix(".py"),
         description=__doc__,
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument("input_pdf_path", type=str, help="输入PDF文件路径")
     parser.add_argument("-x", "--horizontal", action="store_true", help="横向分割/合并")
