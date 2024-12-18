@@ -14,7 +14,7 @@ import os
 import re
 from dataclasses import dataclass
 
-from pypdf import PageObject, PdfReader, PdfWriter
+from pypdf import PageObject, PdfReader, PdfWriter, Transformation
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen.canvas import Canvas
@@ -23,15 +23,36 @@ pdfmetrics.registerFont(TTFont("SimHei", "SimHei.ttf"))
 pdfmetrics.registerFont(TTFont("Times", "times.ttf"))
 
 
-def add_text(page: PageObject, text: str) -> None:
+def add_text(page: PageObject, text: str) -> PageObject:
+    new_page = PageObject.create_blank_page(
+        None, page.mediabox.width, page.mediabox.height
+    )
+
     packet = io.BytesIO()
-    canvas_draw = Canvas(packet, pagesize=(page.mediabox.width, page.mediabox.height))
+    canvas_draw = Canvas(
+        packet, pagesize=(new_page.mediabox.width, new_page.mediabox.height)
+    )
     canvas_draw.setFont("Times", 16)
-    canvas_draw.drawString(page.mediabox.width / 2, page.mediabox.height / 18, text)
+    canvas_draw.drawString(
+        new_page.mediabox.width / 2,
+        new_page.mediabox.height / 18,
+        text,
+    )
     canvas_draw.save()
 
     text_page = PdfReader(packet).pages[0]
-    page.merge_page(text_page)
+
+    new_page.merge_transformed_page(
+        page, Transformation().translate(-page.mediabox.left, -page.mediabox.bottom)
+    )
+    new_page.merge_transformed_page(
+        text_page,
+        Transformation().translate(
+            -text_page.mediabox.left, -text_page.mediabox.bottom
+        ),
+    )
+
+    return new_page
 
 
 @dataclass
@@ -42,7 +63,8 @@ class PageNumConfig:
 
 
 def parse_config(config: str) -> list[PageNumConfig]:
-    """a-b:A-B"""
+    """a-b:A,c-d:C
+    e-f:E,g-h:G"""
     res = []
     for r in re.findall(r"(\d+)-(\d+):(\d+)", config):
         pnc = PageNumConfig(*map(int, r))
@@ -56,21 +78,28 @@ def add_pagenum(
     reader = PdfReader(input_file)
     writer = PdfWriter()
 
-    pages = reader.pages
-    if config_str is not None:
+    if config_str is None:
+        for i, page in enumerate(reader.pages, start=1):
+            new_page = add_text(page, str(i))
+            writer.add_page(new_page)
+    else:
+        pages = reader.pages
         config_list = parse_config(config_str)
+        config_list.sort(key=lambda x: x.pdf_start)
+        new_pages = []
+        old_config = PageNumConfig(0, 0, 0)
         for config in config_list:
+            new_pages.extend(pages[old_config.pdf_end : config.pdf_start - 1])
             offset = 0
             for i in range(config.pdf_start - 1, config.pdf_end):
                 page = pages[i]
-                add_text(page, str(config.display_start + offset))
+                new_page = add_text(page, str(config.display_start + offset))
+                new_pages.append(new_page)
                 offset += 1
-    else:
-        for i, page in enumerate(pages):
-            add_text(page, str(i + 1))
-
-    for page in pages:
-        writer.add_page(page)
+            old_config = config
+        new_pages.extend(pages[old_config.pdf_end :])
+        for page in new_pages:
+            writer.add_page(page)
 
     with open(output_file, "wb") as fp:
         writer.write(fp)
