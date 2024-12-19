@@ -10,17 +10,23 @@
 
 import argparse
 import io
-import os
 import re
 from dataclasses import dataclass
+from pathlib import Path
 
 from pypdf import PageObject, PdfReader, PdfWriter, Transformation
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen.canvas import Canvas
 
-pdfmetrics.registerFont(TTFont("SimHei", "SimHei.ttf"))
-pdfmetrics.registerFont(TTFont("Times", "times.ttf"))
+from .utils import new_path_with_timestamp
+
+FONT_DICT = dict(
+    SimHei="SimHei.ttf",
+    Times="times.ttf",
+)
+for font_name, font_file in FONT_DICT.items():
+    pdfmetrics.registerFont(TTFont(font_name, font_file))
 
 
 def add_text(page: PageObject, text: str) -> PageObject:
@@ -73,7 +79,7 @@ def parse_config(config: str) -> list[PageNumConfig]:
 
 
 def add_pagenum(
-    input_file: str, output_file: str, config_str: str | None = None
+    input_file: Path | str, output_file: Path | str, config_str: str | None = None
 ) -> None:
     reader = PdfReader(input_file)
     writer = PdfWriter()
@@ -114,18 +120,18 @@ def main():
         description=__doc__,
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    parser.add_argument("input_file", help="input PDF file")
+    parser.add_argument("input_file", type=Path, help="input PDF file")
     parser.add_argument(
         "-c", "--config", help="page number config, format: a-b:A[,c-d:C]"
     )
     parser.add_argument("--config-file", help="page number config file")
-    parser.print_help
-    args = parser.parse_args()
-    input_file = args.input_file
-    config_str = args.config
-    config_file = args.config_file
 
-    output_file = "_new".join(os.path.splitext(input_file))
+    args = parser.parse_args()
+    input_file: Path = args.input_file
+    config_str: str | None = args.config
+    config_file: str | None = args.config_file
+
+    output_file = new_path_with_timestamp(input_file)
 
     try:
         if config_str is not None:

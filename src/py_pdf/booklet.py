@@ -10,6 +10,7 @@ from pathlib import Path
 from pypdf import PageObject, PdfReader, PdfWriter
 
 from .common import crop_page, merge_two_pages, sort_from_booklet, sort_to_booklet
+from .utils import new_path_with_timestamp
 
 
 def make_booklet(
@@ -71,7 +72,7 @@ def main():
         description=__doc__,
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    parser.add_argument("input_pdf_path", type=str, help="输入PDF文件路径")
+    parser.add_argument("input_pdf_path", type=Path, help="输入PDF文件路径")
     parser.add_argument("-x", "--horizontal", action="store_true", help="横向分割/合并")
     cmd_grp = parser.add_mutually_exclusive_group()
     cmd_grp.add_argument("--make", action="store_true", help="将PDF文档转换为小册子")
@@ -79,9 +80,9 @@ def main():
 
     args = parser.parse_args()
 
-    input_pdf_path = args.input_pdf_path
-    horizontal = args.horizontal
-    output_pdf_path = "_new".join(osp.splitext(input_pdf_path))
+    input_pdf_path: Path = args.input_pdf_path
+    horizontal: bool = args.horizontal
+    output_pdf_path = new_path_with_timestamp(input_pdf_path)
 
     try:
         if args.make:
