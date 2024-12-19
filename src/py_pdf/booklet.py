@@ -4,7 +4,6 @@
 """
 
 import argparse
-import os.path as osp
 from pathlib import Path
 
 from pypdf import PageObject, PdfReader, PdfWriter
@@ -68,7 +67,7 @@ def split_booklet(
 
 def main():
     parser = argparse.ArgumentParser(
-        prog=osp.basename(__file__).removesuffix(".py"),
+        prog=Path(__file__).name.removesuffix(".py"),
         description=__doc__,
         formatter_class=argparse.RawTextHelpFormatter,
     )

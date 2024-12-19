@@ -3,7 +3,6 @@
 """
 
 import argparse
-import os.path as osp
 from pathlib import Path
 from typing import Iterable
 
@@ -40,7 +39,7 @@ def stat_pdf(paths: Iterable[Path]) -> tuple[int, int]:
 
 def main():
     parser = argparse.ArgumentParser(
-        prog=osp.basename(__file__).removesuffix(".py"),
+        prog=Path(__file__).name.removesuffix(".py"),
         description=__doc__,
         formatter_class=argparse.RawTextHelpFormatter,
     )
