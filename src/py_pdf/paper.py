@@ -10,7 +10,7 @@ from pathlib import Path
 
 from pypdf import PageObject, PdfReader, PdfWriter
 
-from .utils import crop_page, merge_two_pages
+from .common import crop_page, merge_two_pages
 
 
 def make_paper(

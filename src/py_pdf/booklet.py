@@ -9,7 +9,7 @@ from pathlib import Path
 
 from pypdf import PageObject, PdfReader, PdfWriter
 
-from .utils import crop_page, merge_two_pages, sort_from_booklet, sort_to_booklet
+from .common import crop_page, merge_two_pages, sort_from_booklet, sort_to_booklet
 
 
 def make_booklet(
