@@ -6,9 +6,9 @@ from typing import Optional
 
 def new_path_with_timestamp(path: Path, ext: Optional[str] = None) -> Path:
     now = f"{datetime.now():_%y%m%d_%H%M%S}"
-    rematch = re.search(r"_\d{6}_\d{6}$", path.stem)
     stem = path.stem
+    rematch = re.search(r"_\d{6}_\d{6}$", stem)
     if rematch is not None:
-        stem = path.stem[: rematch.start()]
+        stem = stem[: rematch.start()]
     ext = ext or path.suffix
     return path.with_name(f"{stem}{now}{ext}")
