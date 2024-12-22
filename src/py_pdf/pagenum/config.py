@@ -4,7 +4,7 @@ TOML configuration.
 ```toml
 page_range = '1-100:1,150-200:200'
 odd_right = true
-num_format = '-%d-'
+num_format = '-{:d}-'
 
 ```
 
@@ -39,7 +39,7 @@ class PageRange:
 class Config(DataClassTOMLMixin):
     page_range: str
     odd_right: bool = field(default=False)
-    num_format: str = field(default="%d")
+    num_format: str = field(default="{:d}")
 
 
 def default_config(end: int) -> Config:

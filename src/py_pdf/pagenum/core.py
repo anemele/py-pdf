@@ -37,13 +37,13 @@ def add_pagenum(
 
         def add_pn(page: PageObject, num: int) -> PageObject:
             if num % 2 == 0:
-                return add_text(page, 3 / 16, 1 / 18, config.num_format % (num))
+                return add_text(page, 3 / 16, 1 / 18, config.num_format.format(num))
             else:
-                return add_text(page, 13 / 16, 1 / 18, config.num_format % (num))
+                return add_text(page, 13 / 16, 1 / 18, config.num_format.format(num))
     else:
 
         def add_pn(page: PageObject, num: int) -> PageObject:
-            return add_text(page, 1 / 2, 1 / 18, str(num))
+            return add_text(page, 1 / 2, 1 / 18, config.num_format.format(num))
 
     new_pages = []
     old_range = PageRange(0, 0, 0)
