@@ -1,0 +1,3 @@
+page_range = "1-9:1"
+odd_right = false
+num_format = "第%d页"
