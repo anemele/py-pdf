@@ -10,13 +10,57 @@
 
 import argparse
 from pathlib import Path
+from typing import Callable
 
 from pypdf import PageObject, PdfReader, PdfWriter
 
 from py_pdf.utils import new_path_with_timestamp
 
-from .config import PageRange, default_config, parse_config
+from .config import NumPos, PageRange, default_config, parse_config
 from .text import add_text
+
+
+def _gen_add_pn(
+    num_pos: NumPos, num_format: str
+) -> Callable[[PageObject, int], PageObject]:
+    match num_pos:
+        case NumPos.LEFT:
+
+            def add_pn(page: PageObject, num: int) -> PageObject:
+                return add_text(page, 3 / 16, 1 / 18, num_format.format(num))
+        case NumPos.RIGHT:
+
+            def add_pn(page: PageObject, num: int) -> PageObject:
+                return add_text(page, 13 / 16, 1 / 18, num_format.format(num))
+
+        case NumPos.ODD_LEFT:
+
+            def add_pn(page: PageObject, num: int) -> PageObject:
+                if num % 2 == 0:
+                    return add_text(page, 13 / 16, 1 / 18, num_format.format(num))
+                else:
+                    return add_text(page, 3 / 16, 1 / 18, num_format.format(num))
+
+        case NumPos.ODD_RIGHT:
+
+            def add_pn(page: PageObject, num: int) -> PageObject:
+                if num % 2 == 0:
+                    return add_text(page, 3 / 16, 1 / 18, num_format.format(num))
+                else:
+                    return add_text(page, 13 / 16, 1 / 18, num_format.format(num))
+
+        case NumPos.CENTER:
+
+            def add_pn(page: PageObject, num: int) -> PageObject:
+                return add_text(page, 1 / 2, 1 / 18, num_format.format(num))
+
+        case _:
+            print(f"Error: invalid num_pos: {num_pos}")
+
+            def add_pn(page: PageObject, num: int) -> PageObject:
+                return add_text(page, 1 / 2, 1 / 18, num_format.format(num))
+
+    return add_pn
 
 
 def add_pagenum(
@@ -33,17 +77,7 @@ def add_pagenum(
     else:
         config = default_config(len(pages))
 
-    if config.odd_right:
-
-        def add_pn(page: PageObject, num: int) -> PageObject:
-            if num % 2 == 0:
-                return add_text(page, 3 / 16, 1 / 18, config.num_format.format(num))
-            else:
-                return add_text(page, 13 / 16, 1 / 18, config.num_format.format(num))
-    else:
-
-        def add_pn(page: PageObject, num: int) -> PageObject:
-            return add_text(page, 1 / 2, 1 / 18, config.num_format.format(num))
+    add_pn = _gen_add_pn(config.num_pos, config.num_format)
 
     new_pages = []
     old_range = PageRange(0, 0, 0)

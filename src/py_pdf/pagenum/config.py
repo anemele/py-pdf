@@ -13,6 +13,7 @@ num_format = '-{:d}-'
 import os.path as osp
 import re
 from dataclasses import dataclass, field
+from enum import StrEnum
 
 from mashumaro.mixins.toml import DataClassTOMLMixin
 
@@ -35,10 +36,18 @@ class PageRange:
         return res
 
 
+class NumPos(StrEnum):
+    LEFT = "left"
+    RIGHT = "right"
+    CENTER = "center"
+    ODD_LEFT = "odd-left"
+    ODD_RIGHT = "odd-right"
+
+
 @dataclass
 class Config(DataClassTOMLMixin):
     page_range: str
-    odd_right: bool = field(default=False)
+    num_pos: NumPos = field(default=NumPos.CENTER)
     num_format: str = field(default="{:d}")
 
 
