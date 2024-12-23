@@ -99,6 +99,14 @@ def add_pagenum(
 
 
 def main():
+    import sys
+
+    if len(sys.argv) == 2 and sys.argv[1] == "gen-cfg":
+        config_file_path = Path("config.toml")
+        config_file_path.write_text(default_config().to_toml(), encoding="utf-8")
+        print(f"Config file generated: {config_file_path}")
+        return
+
     parser = argparse.ArgumentParser(
         prog="addpn",
         description=__doc__,
