@@ -1,6 +1,6 @@
 [project]
 name = "py-pdf"
-version = "0.1.6"
+version = "0.1.7"
 description = "PDF processing toolkits"
 readme = "README.md"
 authors = [{ name = "Jason Swift", email = "anemele@outlook.com" }]

@@ -1,23 +1,17 @@
 import io
 
 from pypdf import PageObject, PdfReader, Transformation
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfgen.canvas import Canvas
-
-FONT_DICT = dict(
-    SimHei="SimHei.ttf",
-    Times="times.ttf",
-)
-for font_name, font_file in FONT_DICT.items():
-    pdfmetrics.registerFont(TTFont(font_name, font_file))
-
-DEFAULT_FONT_NAME = "SimHei"
-DEFAULT_FONT_SIZE = 16
 
 
 def _create_text_page(
-    width: float, height: float, xrate: float, yrate: float, text: str
+    width: float,
+    height: float,
+    xrate: float,
+    yrate: float,
+    text: str,
+    font_name: str,
+    font_size: int,
 ) -> PageObject:
     """
     `xrate` and `yrate` are to locate the position of the text on the page,
@@ -25,7 +19,7 @@ def _create_text_page(
     """
     packet = io.BytesIO()
     canvas_draw = Canvas(packet, pagesize=(width, height))
-    canvas_draw.setFont(DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE)
+    canvas_draw.setFont(font_name, font_size)
     canvas_draw.drawString(width * xrate, height * yrate, text)
     canvas_draw.save()
 
@@ -33,14 +27,27 @@ def _create_text_page(
     return text_page
 
 
-def add_text(page: PageObject, xrate: float, yrate: float, text: str) -> PageObject:
+def add_text(
+    page: PageObject,
+    xrate: float,
+    yrate: float,
+    text: str,
+    font_name: str,
+    font_size: int,
+) -> PageObject:
+    text_page = _create_text_page(
+        page.mediabox.width,
+        page.mediabox.height,
+        xrate,
+        yrate,
+        text,
+        font_name,
+        font_size,
+    )
+
     new_page = PageObject.create_blank_page(
         None, page.mediabox.width, page.mediabox.height
     )
-    text_page = _create_text_page(
-        page.mediabox.width, page.mediabox.height, xrate, yrate, text
-    )
-
     new_page.merge_transformed_page(
         page, Transformation().translate(-page.mediabox.left, -page.mediabox.bottom)
     )

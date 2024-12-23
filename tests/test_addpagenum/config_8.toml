@@ -1,0 +1,4 @@
+num-pos = 'odd-left'
+num-fmt = "第{:^3d}页"
+font-name = 'C:\Windows\Fonts\HGBTH_CNKI.TTF'
+font-size = 12

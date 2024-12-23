@@ -1,3 +1,2 @@
-page_range = "1-9:1"
-num_pos = 'odd-right'
-num_format = "-{:d}-"
+num-pos = 'odd-right'
+num-fmt = "-{:d}-"

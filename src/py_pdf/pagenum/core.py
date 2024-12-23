@@ -16,49 +16,90 @@ from pypdf import PageObject, PdfReader, PdfWriter
 
 from py_pdf.utils import new_path_with_timestamp
 
-from .config import NumPos, PageRange, default_config, parse_config
+from .config import Config, NumPos, PageRange, default_config, parse_config
 from .text import add_text
 
 
-def _gen_add_pn(
-    num_pos: NumPos, num_format: str
-) -> Callable[[PageObject, int], PageObject]:
-    match num_pos:
+def _gen_add_pn(config: Config) -> Callable[[PageObject, int], PageObject]:
+    match config.num_pos:
         case NumPos.LEFT:
 
             def add_pn(page: PageObject, num: int) -> PageObject:
-                return add_text(page, 3 / 16, 1 / 18, num_format.format(num))
+                return add_text(
+                    page,
+                    3 / 16,
+                    1 / 18,
+                    config.num_fmt.format(num),
+                    config.font_name,
+                    config.font_size,
+                )
         case NumPos.RIGHT:
 
             def add_pn(page: PageObject, num: int) -> PageObject:
-                return add_text(page, 13 / 16, 1 / 18, num_format.format(num))
+                return add_text(
+                    page,
+                    13 / 16,
+                    1 / 18,
+                    config.num_fmt.format(num),
+                    config.font_name,
+                    config.font_size,
+                )
 
         case NumPos.ODD_LEFT:
 
             def add_pn(page: PageObject, num: int) -> PageObject:
                 if num % 2 == 0:
-                    return add_text(page, 13 / 16, 1 / 18, num_format.format(num))
+                    return add_text(
+                        page,
+                        13 / 16,
+                        1 / 18,
+                        config.num_fmt.format(num),
+                        config.font_name,
+                        config.font_size,
+                    )
                 else:
-                    return add_text(page, 3 / 16, 1 / 18, num_format.format(num))
+                    return add_text(
+                        page,
+                        3 / 16,
+                        1 / 18,
+                        config.num_fmt.format(num),
+                        config.font_name,
+                        config.font_size,
+                    )
 
         case NumPos.ODD_RIGHT:
 
             def add_pn(page: PageObject, num: int) -> PageObject:
                 if num % 2 == 0:
-                    return add_text(page, 3 / 16, 1 / 18, num_format.format(num))
+                    return add_text(
+                        page,
+                        3 / 16,
+                        1 / 18,
+                        config.num_fmt.format(num),
+                        config.font_name,
+                        config.font_size,
+                    )
                 else:
-                    return add_text(page, 13 / 16, 1 / 18, num_format.format(num))
+                    return add_text(
+                        page,
+                        13 / 16,
+                        1 / 18,
+                        config.num_fmt.format(num),
+                        config.font_name,
+                        config.font_size,
+                    )
 
         case NumPos.CENTER:
 
             def add_pn(page: PageObject, num: int) -> PageObject:
-                return add_text(page, 1 / 2, 1 / 18, num_format.format(num))
-
-        case _:
-            print(f"Error: invalid num_pos: {num_pos}")
-
-            def add_pn(page: PageObject, num: int) -> PageObject:
-                return add_text(page, 1 / 2, 1 / 18, num_format.format(num))
+                return add_text(
+                    page,
+                    1 / 2,
+                    1 / 18,
+                    config.num_fmt.format(num),
+                    config.font_name,
+                    config.font_size,
+                )
 
     return add_pn
 
@@ -75,24 +116,29 @@ def add_pagenum(
     if config_str_or_file is not None:
         config = parse_config(config_str_or_file)
     else:
-        config = default_config(len(pages))
+        config = default_config()
 
-    add_pn = _gen_add_pn(config.num_pos, config.num_format)
+    add_pn = _gen_add_pn(config)
 
-    new_pages = []
-    old_range = PageRange(0, 0, 0)
-    for new_range in PageRange.parse_range(config.page_range):
-        new_pages.extend(pages[old_range.pdf_end : new_range.pdf_start - 1])
-        offset = 0
-        for i in range(new_range.pdf_start - 1, new_range.pdf_end):
-            page = pages[i]
-            new_page = add_pn(page, new_range.num_start + offset)
-            new_pages.append(new_page)
-            offset += 1
-        old_range = new_range
-    new_pages.extend(pages[old_range.pdf_end :])
-    for page in new_pages:
-        writer.add_page(page)
+    if config.page_range is None:
+        for i, page in enumerate(pages, 1):
+            new_page = add_pn(page, i)
+            writer.add_page(new_page)
+    else:
+        new_pages = []
+        old_range = PageRange(0, 0, 0)
+        for new_range in PageRange.parse_range(config.page_range):
+            new_pages.extend(pages[old_range.pdf_end : new_range.pdf_start - 1])
+            offset = 0
+            for i in range(new_range.pdf_start - 1, new_range.pdf_end):
+                page = pages[i]
+                new_page = add_pn(page, new_range.num_start + offset)
+                new_pages.append(new_page)
+                offset += 1
+            old_range = new_range
+        new_pages.extend(pages[old_range.pdf_end :])
+        for page in new_pages:
+            writer.add_page(page)
 
     with open(output_file, "wb") as fp:
         writer.write(fp)
