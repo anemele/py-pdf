@@ -21,85 +21,36 @@ from .text import add_text
 
 
 def _gen_add_pn(config: Config) -> Callable[[PageObject, int], PageObject]:
-    match config.num_pos:
-        case NumPos.LEFT:
-
-            def add_pn(page: PageObject, num: int) -> PageObject:
-                return add_text(
-                    page,
-                    3 / 16,
-                    1 / 18,
-                    config.num_fmt.format(num),
-                    config.font_name,
-                    config.font_size,
-                )
-        case NumPos.RIGHT:
-
-            def add_pn(page: PageObject, num: int) -> PageObject:
-                return add_text(
-                    page,
-                    13 / 16,
-                    1 / 18,
-                    config.num_fmt.format(num),
-                    config.font_name,
-                    config.font_size,
-                )
-
-        case NumPos.ODD_LEFT:
-
-            def add_pn(page: PageObject, num: int) -> PageObject:
+    def get_x_pos(num: int) -> float:
+        match config.num_pos:
+            case NumPos.LEFT:
+                return 3 / 16
+            case NumPos.RIGHT:
+                return 13 / 16
+            case NumPos.ODD_LEFT:
                 if num % 2 == 0:
-                    return add_text(
-                        page,
-                        13 / 16,
-                        1 / 18,
-                        config.num_fmt.format(num),
-                        config.font_name,
-                        config.font_size,
-                    )
+                    return 13 / 16
                 else:
-                    return add_text(
-                        page,
-                        3 / 16,
-                        1 / 18,
-                        config.num_fmt.format(num),
-                        config.font_name,
-                        config.font_size,
-                    )
-
-        case NumPos.ODD_RIGHT:
-
-            def add_pn(page: PageObject, num: int) -> PageObject:
+                    return 3 / 16
+            case NumPos.ODD_RIGHT:
                 if num % 2 == 0:
-                    return add_text(
-                        page,
-                        3 / 16,
-                        1 / 18,
-                        config.num_fmt.format(num),
-                        config.font_name,
-                        config.font_size,
-                    )
+                    return 3 / 16
                 else:
-                    return add_text(
-                        page,
-                        13 / 16,
-                        1 / 18,
-                        config.num_fmt.format(num),
-                        config.font_name,
-                        config.font_size,
-                    )
+                    return 13 / 16
+            case NumPos.CENTER:
+                return 1 / 2
 
-        case NumPos.CENTER:
+    y_pos = 1 / 18
 
-            def add_pn(page: PageObject, num: int) -> PageObject:
-                return add_text(
-                    page,
-                    1 / 2,
-                    1 / 18,
-                    config.num_fmt.format(num),
-                    config.font_name,
-                    config.font_size,
-                )
+    def add_pn(page: PageObject, num: int) -> PageObject:
+        return add_text(
+            page,
+            get_x_pos(num),
+            y_pos,
+            config.num_fmt.format(num),
+            config.font_name,
+            config.font_size,
+        )
 
     return add_pn
 

@@ -20,7 +20,7 @@ def _create_text_page(
     packet = io.BytesIO()
     canvas_draw = Canvas(packet, pagesize=(width, height))
     canvas_draw.setFont(font_name, font_size)
-    canvas_draw.drawString(width * xrate, height * yrate, text)
+    canvas_draw.drawCentredString(width * xrate, height * yrate, text)
     canvas_draw.save()
 
     text_page = PdfReader(packet).pages[0]
