@@ -1,2 +1,2 @@
 num-pos = 'odd-left'
-num-fmt = "第{:^3d}页"
+num-fmt = '-{:d}-'

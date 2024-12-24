@@ -71,12 +71,12 @@ def add_pagenum(
 
     add_pn = _gen_add_pn(config)
 
-    if config.page_range is None:
+    if config.page_range == "":
         for i, page in enumerate(pages, 1):
             new_page = add_pn(page, i)
             writer.add_page(new_page)
     else:
-        new_pages = []
+        new_pages = list[PageObject]()
         old_range = PageRange(0, 0, 0)
         for new_range in PageRange.parse_range(config.page_range):
             new_pages.extend(pages[old_range.pdf_end : new_range.pdf_start - 1])
@@ -101,7 +101,7 @@ def add_pagenum(
 def main():
     import sys
 
-    if len(sys.argv) == 2 and sys.argv[1] == "gen-cfg":
+    if len(sys.argv) == 2 and sys.argv[1] == "gencfg":
         config_file_path = Path("config.toml")
         config_file_path.write_text(default_config().to_toml(), encoding="utf-8")
         print(f"Config file generated: {config_file_path}")

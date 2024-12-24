@@ -1,2 +1,2 @@
 num-pos = 'odd-right'
-num-fmt = "-{:d}-"
+num-fmt = '-{:d}-'

@@ -16,7 +16,7 @@ def sort_to_booklet(pages: Sequence[T]) -> Sequence[T]:
     if len(pages) % 4 != 0:
         raise ValueError("页面数目必须是 4 的倍数")
 
-    res = []
+    res = list[T]()
     left = 0
     right = len(pages) - 1
     for i in range(len(pages) // 2):
@@ -42,8 +42,8 @@ def sort_from_booklet(pages: Sequence[T]) -> Sequence[T]:
     if len(pages) % 4 != 0:
         raise ValueError("页面数目必须是 4 的倍数")
 
-    left = []
-    right = []
+    left = list[T]()
+    right = list[T]()
     for i in range(len(pages) // 2):
         if i % 2 == 0:
             left.append(pages[2 * i])

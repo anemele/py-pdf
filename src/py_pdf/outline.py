@@ -149,8 +149,8 @@ def _set_outline(pdf: Pdf, outline_txt_path: Path, page_offset: int):
 
     MAX_PAGES = len(pdf.pages)
 
-    outlines: list[OutlineItem] = []
-    history_indent: list[int] = []
+    outlines = list[OutlineItem]()
+    history_indent = list[int]()
 
     # decide the level of each outline according to the relative indent size in each line
     #   no indent:          level 1

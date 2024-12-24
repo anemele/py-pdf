@@ -2,7 +2,7 @@ import os.path as osp
 import re
 from dataclasses import dataclass, field
 from enum import StrEnum
-from typing import Any, Optional
+from typing import Any
 
 import tomllib
 from mashumaro.mixins.toml import DataClassTOMLMixin
@@ -20,7 +20,7 @@ class PageRange:
     def parse_range(range_str: str) -> list["PageRange"]:
         """a-b:A,c-d:C
         e-f:E,g-h:G"""
-        res: list[PageRange] = []
+        res = list[PageRange]()
         for r in re.findall(r"(\d+)-(\d+):(\d+)", range_str):
             pnc = PageRange(*map(int, r))
             res.append(pnc)
@@ -38,7 +38,7 @@ class NumPos(StrEnum):
 
 @dataclass
 class Config(DataClassTOMLMixin):
-    page_range: Optional[str] = field(default=None)
+    page_range: str = field(default="")
     num_pos: NumPos = field(default=NumPos.CENTER)
     num_fmt: str = field(default="{:d}")
     font_name: str = field(default=DEFAULT_FONT_NAME)
