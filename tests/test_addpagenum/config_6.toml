@@ -1,4 +1,4 @@
-num-pos = 'odd-left'
+num-pos = { mode = 'right2' }
 num-fmt = '第{:^3d}页'
 font-name = '楷体'
 font-size = 12

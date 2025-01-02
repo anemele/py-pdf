@@ -28,18 +28,44 @@ class PageRange:
         return res
 
 
-class NumPos(StrEnum):
+class NumMode(StrEnum):
+    CENTER = "center"
     LEFT = "left"
     RIGHT = "right"
-    CENTER = "center"
-    ODD_LEFT = "odd-left"
-    ODD_RIGHT = "odd-right"
+    RIGHT1 = "right1"  # 奇数页码居右
+    RIGHT2 = "right2"  # 偶数页码居右
+
+
+@dataclass
+class NumPos:
+    x: float = field(default=-1)
+    y: float = field(default=-1)
+    mode: NumMode = field(default=NumMode.CENTER)
+
+    def __check_xy(self) -> bool:
+        return 0 <= self.x <= 1 and 0 <= self.y <= 1
+
+    def __default_xy(self) -> tuple[float, float]:
+        y = 1 / 16
+        match self.mode:
+            case NumMode.CENTER:
+                x = 1 / 2
+            case NumMode.LEFT:
+                x = 3 / 16
+            case NumMode.RIGHT | NumMode.RIGHT1 | NumMode.RIGHT2:
+                # first x for right1 and right2
+                x = 13 / 16
+        return x, y
+
+    def __post_init__(self):
+        if not self.__check_xy():
+            self.x, self.y = self.__default_xy()
 
 
 @dataclass
 class Config(DataClassTOMLMixin):
     page_range: str = field(default="")
-    num_pos: NumPos = field(default=NumPos.CENTER)
+    num_pos: NumPos = field(default_factory=NumPos)
     num_fmt: str = field(default="{:d}")
     font_name: str = field(default=DEFAULT_FONT_NAME)
     font_size: int = field(default=DEFAULT_FONT_SIZE)

@@ -16,37 +16,32 @@ from pypdf import PageObject, PdfReader, PdfWriter
 
 from py_pdf.utils import new_path_with_timestamp
 
-from .config import Config, NumPos, PageRange, default_config, parse_config
+from .config import Config, NumMode, PageRange, default_config, parse_config
 from .text import add_text
 
 
 def _gen_add_pn(config: Config) -> Callable[[PageObject, int], PageObject]:
     def get_x_pos(num: int) -> float:
-        match config.num_pos:
-            case NumPos.LEFT:
-                return 3 / 16
-            case NumPos.RIGHT:
-                return 13 / 16
-            case NumPos.ODD_LEFT:
+        x = config.num_pos.x
+        match config.num_pos.mode:
+            case NumMode.RIGHT1:
                 if num % 2 == 0:
-                    return 13 / 16
+                    return 1 - x
                 else:
-                    return 3 / 16
-            case NumPos.ODD_RIGHT:
+                    return x
+            case NumMode.RIGHT2:
                 if num % 2 == 0:
-                    return 3 / 16
+                    return x
                 else:
-                    return 13 / 16
-            case NumPos.CENTER:
-                return 1 / 2
-
-    y_pos = 1 / 18
+                    return 1 - x
+            case _:
+                return x
 
     def add_pn(page: PageObject, num: int) -> PageObject:
         return add_text(
             page,
             get_x_pos(num),
-            y_pos,
+            config.num_pos.y,
             config.num_fmt.format(num),
             config.font_name,
             config.font_size,

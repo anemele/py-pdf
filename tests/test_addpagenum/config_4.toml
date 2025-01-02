@@ -1,2 +1,2 @@
-num-pos = 'odd-right'
+num-pos = { mode = 'right1' }
 num-fmt = '-{:d}-'
