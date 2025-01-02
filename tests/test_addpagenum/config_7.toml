@@ -1,4 +1,0 @@
-num-pos = { mode = 'right2' }
-num-fmt = 'no.{:d}'
-font-name = '未知'
-font-size = 12

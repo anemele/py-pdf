@@ -5,55 +5,79 @@ from py_pdf.pagenum import add_pagenum
 this_dir = Path(__file__).parent
 
 
-def test_1():
-    input_file = "tests/sample/A4.pdf"
-    output_file = this_dir / "test_1.pdf"
-    add_pagenum(input_file, output_file)
+def test_default_config():
+    add_pagenum("tests/sample/A4.pdf", this_dir / "test_1.pdf")
 
 
-def test_2():
-    input_file = "tests/sample/A4.pdf"
-    output_file = this_dir / "test_2.pdf"
-    add_pagenum(input_file, output_file, "page_range='3-8:10'")
+def test_config_by_string():
+    add_pagenum("tests/sample/A4.pdf", this_dir / "test_2.pdf", "page_range='3-8:10'")
 
 
-def test_3():
-    input_file = "tests/sample/A4.pdf"
-    output_file = this_dir / "test_3.pdf"
-    config_file = this_dir / "config_3.toml"
-    add_pagenum(input_file, output_file, str(config_file))
+def test_config_by_file():
+    add_pagenum(
+        "tests/sample/A4.pdf", this_dir / "test_3.pdf", str(this_dir / "config.toml")
+    )
 
 
 def test_4():
-    input_file = "tests/sample/A4.pdf"
-    output_file = this_dir / "test_4.pdf"
-    config_file = this_dir / "config_4.toml"
-    add_pagenum(input_file, output_file, str(config_file))
+    add_pagenum(
+        "tests/sample/A4.pdf",
+        this_dir / "test_4.pdf",
+        """num-pos = { mode = 'right1' }
+num-fmt = '-{:d}-'
+""",
+    )
 
 
 def test_5():
-    input_file = "tests/sample/A4.pdf"
-    output_file = this_dir / "test_5.pdf"
-    config_file = this_dir / "config_5.toml"
-    add_pagenum(input_file, output_file, str(config_file))
+    add_pagenum(
+        "tests/sample/A4.pdf",
+        this_dir / "test_5.pdf",
+        """num-pos = { mode = 'right2' }
+num-fmt = '-{:d}-'
+""",
+    )
 
 
 def test_6():
-    input_file = "tests/sample/A4.pdf"
-    output_file = this_dir / "test_6.pdf"
-    config_file = this_dir / "config_6.toml"
-    add_pagenum(input_file, output_file, str(config_file))
+    add_pagenum(
+        "tests/sample/A4.pdf",
+        this_dir / "test_6.pdf",
+        """num-pos = { mode = 'right2' }
+num-fmt = '第{:^3d}页'
+font-name = '楷体'
+font-size = 12
+""",
+    )
 
 
 def test_7():
-    input_file = "tests/sample/A4.pdf"
-    output_file = this_dir / "test_7.pdf"
-    config_file = this_dir / "config_7.toml"
-    add_pagenum(input_file, output_file, str(config_file))
+    add_pagenum(
+        "tests/sample/A4.pdf",
+        this_dir / "test_7.pdf",
+        """num-pos = { mode = 'right2' }
+num-fmt = 'no.{:d}'
+font-name = '未知'
+font-size = 12
+""",
+    )
 
 
 def test_8():
-    input_file = "tests/sample/A4.pdf"
-    output_file = this_dir / "test_8.pdf"
-    config_file = this_dir / "config_8.toml"
-    add_pagenum(input_file, output_file, str(config_file))
+    add_pagenum(
+        "tests/sample/A4.pdf",
+        this_dir / "test_8.pdf",
+        r"""num-pos = { mode = 'right2' }
+num-fmt = '第{:^3d}页'
+font-name = 'C:\Windows\Fonts\HGBTH_CNKI.TTF'
+font-size = 12
+""",
+    )
+
+
+def test_9():
+    add_pagenum(
+        "tests/sample/A4.pdf",
+        this_dir / "test_9.pdf",
+        """num-pos = { x=0.0625, y=0.9375, mode = 'right2' }""",
+    )
