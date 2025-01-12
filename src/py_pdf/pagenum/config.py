@@ -42,24 +42,24 @@ class NumPos:
     y: float = field(default=-1)
     mode: NumMode = field(default=NumMode.CENTER)
 
-    def __check_xy(self) -> bool:
-        return 0 <= self.x <= 1 and 0 <= self.y <= 1
-
-    def __default_xy(self) -> tuple[float, float]:
-        y = 1 / 16
-        match self.mode:
-            case NumMode.CENTER:
-                x = 1 / 2
-            case NumMode.LEFT:
-                x = 3 / 16
-            case NumMode.RIGHT | NumMode.RIGHT1 | NumMode.RIGHT2:
-                # first x for right1 and right2
-                x = 13 / 16
-        return x, y
-
     def __post_init__(self):
-        if not self.__check_xy():
-            self.x, self.y = self.__default_xy()
+        def check_xy() -> bool:
+            return 0 <= self.x <= 1 and 0 <= self.y <= 1
+
+        def default_xy() -> tuple[float, float]:
+            y = 1 / 16
+            match self.mode:
+                case NumMode.CENTER:
+                    x = 1 / 2
+                case NumMode.LEFT:
+                    x = 3 / 16
+                case NumMode.RIGHT | NumMode.RIGHT1 | NumMode.RIGHT2:
+                    # first x for right1 and right2
+                    x = 13 / 16
+            return x, y
+
+        if not check_xy():
+            self.x, self.y = default_xy()
 
 
 @dataclass

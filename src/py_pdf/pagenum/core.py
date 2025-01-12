@@ -1,11 +1,14 @@
-"""给PDF文件添加页码，添加位置为页尾居中。
-默认全文从1开始，按自然数顺序编号。
+"""PDF 文件添加页码。
 
-支持输入配置，格式为： `a-b:A` ，标示从a页到b页编号，a页编号为A，依次类推。
-支持多个配置，以逗号分割，格式为： `a-b:A,c-d:C` 。
-另外支持文件配置，格式同上，支持以逗号和换行符分割。
+默认全文档添加页码，从 1 开始，递增编号，位置为页尾居中。
 
-自行保证输入合法，本程序不做验证。
+支持配置，输入 gencfg 子命令生成配置文件。
+
+页码范围格式为： `a-b:A` ，表示a页到b页添加页码，a页页码为A，依次递增。
+开源输入多个页码范围，各个范围之间需要隔开。
+
+其他配置请参考配置文件。
+
 """
 
 import argparse
@@ -113,14 +116,14 @@ def main():
 
     args = parser.parse_args()
     input_file: Path = args.input_file
-    _range: str | None = args.range
+    range_: str | None = args.range
     config_file: str | None = args.config_file
 
     output_file = new_path_with_timestamp(input_file)
 
     try:
-        if _range is not None:
-            add_pagenum(input_file, output_file, f"page_range='{_range}'")
+        if range_ is not None:
+            add_pagenum(input_file, output_file, f"page_range='{range_}'")
         elif config_file is not None:
             add_pagenum(input_file, output_file, config_file)
         else:
