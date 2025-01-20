@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from py_pdf.outline.outline import get_outline, remove_outline, set_outline
+from py_pdf.outline.core import get_outline, remove_outline, set_outline
 
 this_dir = Path(__file__).parent
 

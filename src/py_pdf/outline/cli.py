@@ -4,7 +4,7 @@ from typing import Optional
 
 from py_pdf.utils import new_path_with_timestamp
 
-from .outline import (
+from .core import (
     get_outline,
     remove_outline,
     set_outline,
