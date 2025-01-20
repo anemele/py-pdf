@@ -49,7 +49,7 @@ def parse_lines(lines: Iterable[str]) -> Iterable[OutlineItem]:
     for line in lines:
         item = parse_line(line)
         if item is None:
-            print(f"Warning: invalid outline item: {line}")
+            # print(f"[Warning] invalid outline item: {line}")
             continue
         yield item
 
@@ -104,7 +104,7 @@ def serialize_to_text(root: OutlineItemNode) -> str:
 
 def parse_from_file(filename: str) -> OutlineItemNode:
     with open(filename, "r", encoding="utf-8") as f:
-        s = f.read()
+        s = f.read().strip()
     return parse_from_text(s)
 
 

@@ -36,17 +36,23 @@ def main():
 
     try:
         if args.get:
+            outline = get_outline(pdf_file_path)
             outline_txt_path = new_path_with_timestamp(pdf_file_path, ".txt")
-            get_outline(pdf_file_path, outline_txt_path)
+            if outline_txt_path.exists():
+                print(f"overwrite {outline_txt_path}")
+            outline_txt_path.write_text(outline, encoding="utf-8")
+            print(f"save as\n{outline_txt_path}")
         elif args.set:
             if outline_txt_path is None:
                 print("请指定outline文件路径")
                 return
             output_path = new_path_with_timestamp(pdf_file_path)
             set_outline(pdf_file_path, output_path, outline_txt_path, page_offset)
+            print(f"save as\n{output_path}")
         elif args.rm:
             output_path = new_path_with_timestamp(pdf_file_path)
             remove_outline(pdf_file_path, output_path)
+            print(f"save as\n{output_path}")
         else:
             # should not reach here
             parser.print_help()

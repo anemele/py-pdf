@@ -16,7 +16,7 @@ def parse_outline_tree(
     outlines: list[OutlineItem], level: int = 1, names=None
 ) -> list[_OutlineItem]:
     def cvt_outline_item(item: OutlineItem, level: int) -> _OutlineItem:
-        return _OutlineItem(level, item.title, get_destiny_page_number(item, names))
+        return _OutlineItem(level, item.title, get_destiny_page_number(item, names) + 1)
 
     def dfs(node: OutlineItem, level: int) -> Iterator[tuple[OutlineItem, int]]:
         yield node, level
@@ -77,7 +77,7 @@ def get_destiny_page_number(outline: OutlineItem, names) -> int:
     return outline.destination
 
 
-def get_outline(input_path: Path, outline_txt_path: Path):
+def get_outline(input_path: Path) -> str:
     # https://github.com/pikepdf/pikepdf/issues/149#issuecomment-860073511
     def has_nested_key(obj, keys):
         to_check = obj
@@ -102,22 +102,14 @@ def get_outline(input_path: Path, outline_txt_path: Path):
         else:
             raise ValueError
 
-    pdf = Pdf.open(input_path)
-    names = get_names(pdf)
+    with Pdf.open(input_path) as pdf:
+        names = get_names(pdf)
 
-    with pdf.open_outline() as outline:
-        outlines = parse_outline_tree(outline.root, names=names)
-    if len(outlines) == 0:
-        print(f"no outline is found in {input_path}")
-        return
-
-    if outline_txt_path.exists():
-        print(f"overwrite {outline_txt_path}")
+        with pdf.open_outline() as outline:
+            outlines = parse_outline_tree(outline.root, names=names)
 
     s = serialize_lines(outlines)
-    outline_txt_path.write_text("\n".join(s), encoding="utf-8")
-
-    print(f"save as\n{outline_txt_path}")
+    return "\n".join(s)
 
 
 def set_outline(
@@ -125,12 +117,17 @@ def set_outline(
 ):
     MAX_PAGES: int
 
+    class OutOfRangeError(Exception):
+        pass
+
     def dfs(node: OutlineItemNode, parent: OutlineItem):
         item = node.item
-        if item.page + page_offset >= MAX_PAGES:
-            print(f"page index out of range: {item.page + page_offset} >= {MAX_PAGES}")
-            raise
-        new_outline = OutlineItem(item.title, item.page + page_offset)
+        page = item.page + page_offset - 1
+        if page >= MAX_PAGES:
+            print(f"page index out of range: {page} >= {MAX_PAGES}")
+            raise OutOfRangeError
+
+        new_outline = OutlineItem(item.title, page)
         parent.children.append(new_outline)
         if node.children is None:
             return
@@ -139,18 +136,19 @@ def set_outline(
 
     root = parse_from_file(str(outline_txt_path))
     outlineitem = OutlineItem("")
-    try:
-        dfs(root, outlineitem)
-    except Exception:
-        pass
 
     with Pdf.open(input_path) as pdf:
         MAX_PAGES = len(pdf.pages)
+        try:
+            dfs(root, outlineitem)
+        except OutOfRangeError:
+            return
 
-        with pdf.open_outline() as outline:
-            outline.root[:] = outlineitem.children
+        with Pdf.open(input_path) as pdf:
+            with pdf.open_outline() as outline:
+                outline.root[:] = outlineitem.children[0].children
 
-        pdf.save(output_path)
+            pdf.save(output_path)
 
 
 def remove_outline(input_path: Path, output_path: Path):
