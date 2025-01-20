@@ -3,38 +3,31 @@
 支持提取、设置、删除、重置大纲。"""
 
 import re
-from itertools import chain
+from itertools import chain, starmap
 from pathlib import Path
-from typing import Optional
+from typing import Iterator, Optional
 
 from pikepdf import Array, Name, OutlineItem, Page, Pdf, String
 
 from py_pdf.utils import new_path_with_timestamp
 
+from .parser import OutlineItem as _OutlineItem
+from .parser import serialize_lines
+
 
 def parse_outline_tree(
-    outlines: OutlineItem | list[OutlineItem], level: int = 0, names=None
-) -> list[tuple[int, int, str]]:
-    if isinstance(outlines, (list, tuple)):
-        return list(
-            chain.from_iterable(
-                parse_outline_tree(heading, level=level, names=names)
-                for heading in outlines
-            )
-        )
-    else:
-        tmp = [(level, get_destiny_page_number(outlines, names) + 1, outlines.title)]
-        return list(
-            chain(
-                tmp,
-                chain.from_iterable(
-                    (
-                        parse_outline_tree(subheading, level=level + 1, names=names)
-                        for subheading in outlines.children
-                    ),
-                ),
-            )
-        )
+    outlines: list[OutlineItem], level: int = 1, names=None
+) -> list[_OutlineItem]:
+    def cvt_outline_item(item: OutlineItem, level: int) -> _OutlineItem:
+        return _OutlineItem(level, item.title, get_destiny_page_number(item, names))
+
+    def dfs(node: OutlineItem, level: int) -> Iterator[tuple[OutlineItem, int]]:
+        yield node, level
+        for child in node.children:
+            yield from dfs(child, level + 1)
+
+    items = chain.from_iterable(dfs(outline, level) for outline in outlines)
+    return list(starmap(cvt_outline_item, items))
 
 
 def get_destiny_page_number(outline: OutlineItem, names) -> int:
@@ -119,21 +112,14 @@ def get_outline(input_path: Path):
         outlines = parse_outline_tree(outline.root, names=names)
     if len(outlines) == 0:
         print(f"no outline is found in {input_path}")
-        exit()
-
-    max_length = max(len(title) + 2 * level for level, _, title in outlines) + 1
-
-    def fmt(item):
-        level, page, title = item
-        level_space = "  " * level
-        title_page_space = " " * (max_length - level * 2 - len(title))
-        return f"{level_space}{title}{title_page_space}{page}"
+        return
 
     outline_txt_path = new_path_with_timestamp(input_path, ".txt")
     if outline_txt_path.exists():
         print(f"overwrite {outline_txt_path}")
 
-    outline_txt_path.write_text("\n".join(map(fmt, outlines)), encoding="utf-8")
+    s = serialize_lines(outlines)
+    outline_txt_path.write_text("\n".join(s), encoding="utf-8")
 
     print(f"save as\n{outline_txt_path}")
 
