@@ -2,17 +2,14 @@
 
 支持提取、设置、删除、重置大纲。"""
 
-import re
 from itertools import chain, starmap
 from pathlib import Path
-from typing import Iterator, Optional
+from typing import Iterator
 
 from pikepdf import Array, Name, OutlineItem, Page, Pdf, String
 
-from py_pdf.utils import new_path_with_timestamp
-
 from .parser import OutlineItem as _OutlineItem
-from .parser import serialize_lines
+from .parser import OutlineItemNode, parse_from_file, serialize_lines
 
 
 def parse_outline_tree(
@@ -80,7 +77,7 @@ def get_destiny_page_number(outline: OutlineItem, names) -> int:
     return outline.destination
 
 
-def get_outline(input_path: Path):
+def get_outline(input_path: Path, outline_txt_path: Path):
     # https://github.com/pikepdf/pikepdf/issues/149#issuecomment-860073511
     def has_nested_key(obj, keys):
         to_check = obj
@@ -114,7 +111,6 @@ def get_outline(input_path: Path):
         print(f"no outline is found in {input_path}")
         return
 
-    outline_txt_path = new_path_with_timestamp(input_path, ".txt")
     if outline_txt_path.exists():
         print(f"overwrite {outline_txt_path}")
 
@@ -124,74 +120,44 @@ def get_outline(input_path: Path):
     print(f"save as\n{outline_txt_path}")
 
 
-def _set_outline(pdf: Pdf, outline_txt_path: Path, page_offset: int):
-    outline_lines = outline_txt_path.read_text(encoding="utf-8").strip().split("\n")
+def set_outline(
+    input_path: Path, output_path: Path, outline_txt_path: Path, page_offset: int
+):
+    MAX_PAGES: int
 
-    MAX_PAGES = len(pdf.pages)
+    def dfs(node: OutlineItemNode, parent: OutlineItem):
+        item = node.item
+        if item.page + page_offset >= MAX_PAGES:
+            print(f"page index out of range: {item.page + page_offset} >= {MAX_PAGES}")
+            raise
+        new_outline = OutlineItem(item.title, item.page + page_offset)
+        parent.children.append(new_outline)
+        if node.children is None:
+            return
+        for child in node.children:
+            dfs(child, new_outline)
 
-    outlines = list[OutlineItem]()
-    history_indent = list[int]()
+    root = parse_from_file(str(outline_txt_path))
+    outlineitem = OutlineItem("")
+    try:
+        dfs(root, outlineitem)
+    except Exception:
+        pass
 
-    # decide the level of each outline according to the relative indent size in each line
-    #   no indent:          level 1
-    #     small indent:     level 2
-    #       larger indent:  level 3
-    #   ...
-    def get_parent_outline(
-        current_indent: int, history_indent: list[int], outlines: list[OutlineItem]
-    ) -> Optional[OutlineItem]:
-        """The parent of A is the nearest outline whose indent is smaller than A's"""
-        assert len(history_indent) == len(outlines)
-        if current_indent == 0:
-            return None
-        for i in range(len(history_indent) - 1, -1, -1):
-            # len(history_indent) - 1   ===>   0
-            if history_indent[i] < current_indent:
-                return outlines[i]
-        return None
-
-    with pdf.open_outline() as outline:
-        for line in outline_lines:
-            line2 = re.split(r"\s+", line.strip())
-            if len(line2) == 1:
-                continue
-
-            indent_size = len(line) - len(line.lstrip())
-            parent = get_parent_outline(indent_size, history_indent, outlines)
-            history_indent.append(indent_size)
-
-            title, page = " ".join(line2[:-1]), int(line2[-1]) - 1
-            if page + page_offset >= MAX_PAGES:
-                print(f"page index out of range: {page + page_offset} >= {MAX_PAGES}")
-                exit()
-
-            new_outline = OutlineItem(title, page + page_offset)
-            if parent is None:
-                outline.root.append(new_outline)
-            else:
-                parent.children.append(new_outline)
-            outlines.append(new_outline)
-
-    return pdf
-
-
-def set_outline(input_path: Path, outline_txt_path: Path, page_offset: int):
     with Pdf.open(input_path) as pdf:
-        new_pdf = _set_outline(pdf, outline_txt_path, page_offset)
-        output_path = new_path_with_timestamp(input_path)
-        new_pdf.save(output_path)
+        MAX_PAGES = len(pdf.pages)
 
+        with pdf.open_outline() as outline:
+            outline.root[:] = outlineitem.children
 
-def remove_outline(input_path: Path):
-    with Pdf.open(input_path) as pdf:
-        pdf.open_outline().root.clear()
-        output_path = new_path_with_timestamp(input_path)
         pdf.save(output_path)
 
 
-def reset_outline(input_path: Path, outline_txt_path: Path, page_offset: int):
+def remove_outline(input_path: Path, output_path: Path):
     with Pdf.open(input_path) as pdf:
-        pdf.open_outline().root.clear()
-        new_pdf = _set_outline(pdf, outline_txt_path, page_offset)
-        output_path = new_path_with_timestamp(input_path)
-        new_pdf.save(output_path)
+        # The next line does not work, I don't know why. 2025-01-20
+        # pdf.open_outline().root.clear()
+        with pdf.open_outline() as outline:
+            outline.root.clear()
+
+        pdf.save(output_path)
