@@ -17,7 +17,7 @@ booklet = "py_pdf.booklet:main"
 statpage = "py_pdf.statpage:main"
 paper = "py_pdf.paper:main"
 addpn = "py_pdf.pagenum.core:main"
-outline = "py_pdf.outline:main"
+outline = "py_pdf.outline.cli:main"
 
 [build-system]
 requires = ["hatchling"]

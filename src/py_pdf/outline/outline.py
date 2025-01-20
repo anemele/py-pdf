@@ -2,12 +2,6 @@
 
 支持提取、设置、删除、重置大纲。"""
 
-import sys
-
-if sys.version_info < (3, 7):
-    raise NotImplementedError("pikepdf requires Python 3.7+")
-
-import argparse
 import re
 from itertools import chain
 from pathlib import Path
@@ -15,7 +9,7 @@ from typing import Optional
 
 from pikepdf import Array, Name, OutlineItem, Page, Pdf, String
 
-from .utils import new_path_with_timestamp
+from py_pdf.utils import new_path_with_timestamp
 
 
 def parse_outline_tree(
@@ -215,49 +209,3 @@ def reset_outline(input_path: Path, outline_txt_path: Path, page_offset: int):
         new_pdf = _set_outline(pdf, outline_txt_path, page_offset)
         output_path = new_path_with_timestamp(input_path)
         new_pdf.save(output_path)
-
-
-def main():
-    parser = argparse.ArgumentParser(
-        prog=Path(__file__).name.removesuffix(".py"),
-        description=__doc__,
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
-    parser.add_argument("input_path", type=Path, help="输入PDF文件路径")
-    parser.add_argument("--outline-file-path", type=Path, help="outline文件路径")
-    parser.add_argument("--page-offset", type=int, default=0, help="页码偏移量")
-    cmd_grp = parser.add_mutually_exclusive_group()
-    cmd_grp.add_argument("--get", action="store_true", help="提取outline")
-    cmd_grp.add_argument("--set", action="store_true", help="设置outline")
-    cmd_grp.add_argument("--rm", action="store_true", help="删除outline")
-    cmd_grp.add_argument("--rst", action="store_true", help="重置outline")
-
-    args = parser.parse_args()
-    input_path: Path = args.input_path
-    outline_txt_path: Optional[Path] = args.outline_file_path
-    page_offset: int = args.page_offset
-
-    try:
-        if args.get:
-            get_outline(input_path)
-        elif args.set:
-            if outline_txt_path is None:
-                print("请指定outline文件路径")
-                exit()
-            set_outline(input_path, outline_txt_path, page_offset)
-        elif args.rm:
-            remove_outline(input_path)
-        elif args.rst:
-            if outline_txt_path is None:
-                print("请指定outline文件路径")
-                exit()
-            reset_outline(input_path, outline_txt_path, page_offset)
-        else:
-            parser.print_help()
-    except Exception as e:
-        print(f"Error: {e}")
-        exit(1)
-
-
-if __name__ == "__main__":
-    main()
