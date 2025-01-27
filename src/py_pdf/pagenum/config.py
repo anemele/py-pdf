@@ -1,10 +1,10 @@
 import os.path as osp
 import re
+import tomllib
 from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any
 
-import tomllib
 from mashumaro.mixins.toml import DataClassTOMLMixin
 
 from .font import DEFAULT_FONT_NAME, DEFAULT_FONT_SIZE, FONT_DICT, register_font
