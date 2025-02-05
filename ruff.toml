@@ -1,3 +1,0 @@
-target-version = "py312"
-[lint]
-extend-select = ["I", "UP034"]

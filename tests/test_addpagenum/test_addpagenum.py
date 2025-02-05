@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from py_pdf.pagenum import add_pagenum
+from py_pdf.pagenum.core import add_pagenum
 
 this_dir = Path(__file__).parent
 

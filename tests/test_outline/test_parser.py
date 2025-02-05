@@ -1,45 +1,64 @@
-from py_pdf.outline.parser import parse_from_text
+from py_pdf.outline.parser import OutlineItem, OutlineItemNode, parse_from_text
+
+test_cases = [
+    (
+        """
+# 目录   1
+## 目录  5
+### 目录 10
+# 目录   11""",
+        [
+            OutlineItemNode(
+                OutlineItem(1, "目录", 1),
+                [
+                    OutlineItemNode(
+                        OutlineItem(2, "目录", 5),
+                        [OutlineItemNode(OutlineItem(3, "目录", 10), [])],
+                    )
+                ],
+            ),
+            OutlineItemNode(
+                OutlineItem(1, "目录", 11),
+                [],
+            ),
+        ],
+    ),
+    (
+        """
+# Chapter 1           1
+## Section 1.1        2
+### SubSection 1.1.1  3
+### SubSection 1.1.2  4
+### SubSection 1.1.3  5
+## Section 1.2        6
+# Chapter 2           7""",
+        [
+            OutlineItemNode(
+                OutlineItem(1, "Chapter 1", 1),
+                [
+                    OutlineItemNode(
+                        OutlineItem(2, "Section 1.1", 2),
+                        [
+                            OutlineItemNode(OutlineItem(3, "SubSection 1.1.1", 3), []),
+                            OutlineItemNode(OutlineItem(3, "SubSection 1.1.2", 4), []),
+                            OutlineItemNode(OutlineItem(3, "SubSection 1.1.3", 5), []),
+                        ],
+                    ),
+                    OutlineItemNode(
+                        OutlineItem(2, "Section 1.2", 6),
+                        [],
+                    ),
+                ],
+            ),
+            OutlineItemNode(
+                OutlineItem(1, "Chapter 2", 7),
+                [],
+            ),
+        ],
+    ),
+]
 
 
-def test_parse_from_text():
-    s = """
-        #目录#1
-        ##目录#5
-        ###目录#10
-        #目录#11 """
-    root = parse_from_text(s)
-
-    assert root.children is not None
-    assert len(root.children) == 2
-
-    node = root.children[0]
-    item = node.item
-    assert item.level == 1
-    assert item.title == "目录"
-    assert item.page == 1
-
-    assert node.children is not None
-    assert len(node.children) == 1
-
-    node = node.children[0]
-    item = node.item
-    assert item.level == 2
-    assert item.title == "目录"
-    assert item.page == 5
-
-    assert node.children is not None
-    assert len(node.children) == 1
-
-    node = node.children[0]
-    item = node.item
-    assert item.level == 3
-    assert item.title == "目录"
-    assert item.page == 10
-
-    node = root.children[1]
-    item = node.item
-    assert item.level == 1
-    assert item.title == "目录"
-    assert item.page == 11
-
-    assert node.children is None
+def test_parse_from_text_parameterized():
+    for s, expected in test_cases:
+        assert parse_from_text(s).children == expected

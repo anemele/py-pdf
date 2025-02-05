@@ -1,26 +1,32 @@
-"""大纲解析器
+r"""大纲解析器
 
 约定：
 大纲文件是一个 markdown 文件，每行表示一个目录项，格式为：
 
 ```
-#目录#1
-##目录#5
-###目录#10
-#目录#11
+# 目录   1
+## 目录  5
+### 目录 10
+# 目录   11
 ...
 ```
 
 解释：
 - 行首的 `#` 表示目录级别，每多一个 `#` 表示目录级别更深；
-- 行尾的 `#` 后面的数字表示页码；
+- 行尾的数字表示页码；
 - 中间的所有内容表示目录名称，可以包含空格，但首尾空格会被忽略。
+- 行末的页码与中间的目录名称之间可以忽略空格，但名称结尾也是数字例外。
+
+每行符合正则 ^(#+)\s*([\s\S]+?)\s*(\d+)$
+
 """
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from itertools import chain
 from typing import Iterable, Iterator, Optional
+
+PATTERN = re.compile(r"^(#+)\s*([\s\S]+?)\s*(\d+)$")
 
 
 @dataclass
@@ -32,17 +38,13 @@ class OutlineItem:
 
 def parse_line(line: str) -> Optional[OutlineItem]:
     line = line.strip()
-    res = re.match(r"^(#+)([\s\S]+?)#(\d+)$", line)
+    res = PATTERN.match(line)
     if res is None:
         return None
     level = len(res.group(1))
     title = res.group(2).strip()
     page = int(res.group(3))
     return OutlineItem(level, title, page)
-
-
-def serialize_item(item: OutlineItem) -> str:
-    return f"{'#' * item.level}{item.title}#{item.page}"
 
 
 def parse_lines(lines: Iterable[str]) -> Iterable[OutlineItem]:
@@ -55,13 +57,19 @@ def parse_lines(lines: Iterable[str]) -> Iterable[OutlineItem]:
 
 
 def serialize_lines(items: Iterable[OutlineItem]) -> Iterable[str]:
-    yield from map(serialize_item, items)
+    tmp = [item.level + len(item.title) for item in items]
+    if len(tmp) == 0:
+        return
+    length = max(tmp)
+    for item in items:
+        tmp = f"{'#' * item.level} {item.title}"
+        yield f"{tmp: <{length + 1}}  {item.page}"
 
 
 @dataclass
 class OutlineItemNode:
     item: OutlineItem
-    children: Optional[list["OutlineItemNode"]] = None
+    children: list["OutlineItemNode"] = field(default_factory=list)
 
 
 def build_outline_tree(items: Iterable[OutlineItem]) -> OutlineItemNode:
@@ -71,8 +79,6 @@ def build_outline_tree(items: Iterable[OutlineItem]) -> OutlineItemNode:
         while item.level <= stack[-1].item.level:
             stack.pop()
         parent = stack[-1]
-        if parent.children is None:
-            parent.children = []
         node = OutlineItemNode(item)
         parent.children.append(node)
         stack.append(node)
@@ -88,7 +94,7 @@ def serialize_outline_tree(root: OutlineItemNode) -> Iterable[str]:
 
     items = dfs(root)
     next(items)  # skip root item
-    yield from map(serialize_item, items)
+    yield from serialize_lines(items)
 
 
 def parse_from_text(s: str) -> OutlineItemNode:
