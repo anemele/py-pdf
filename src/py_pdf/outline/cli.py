@@ -1,6 +1,5 @@
 import argparse
 from pathlib import Path
-from typing import Optional
 
 from py_pdf.utils import new_path_with_timestamp
 
@@ -17,44 +16,46 @@ def cli():
         description=__doc__,
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    parser.add_argument("pdf_file_path", type=Path, help="输入PDF文件路径")
-    parser.add_argument(
-        "outline_file_path", nargs="?", type=Path, help="outline文件路径"
+
+    subparsers = parser.add_subparsers(dest="cmd")
+
+    cmd_get = subparsers.add_parser("get", help="提取outline")
+    cmd_get.add_argument("pdf_file_path", type=Path, help="输入PDF文件路径")
+
+    cmd_set = subparsers.add_parser("set", help="设置outline")
+    cmd_set.add_argument("pdf_file_path", type=Path, help="输入PDF文件路径")
+    cmd_set.add_argument("outline_file_path", type=Path, help="outline文件路径")
+    cmd_set.add_argument(
+        "page_offset", type=int, nargs="?", default=0, help="页码偏移量，默认0"
     )
-    parser.add_argument(
-        "page_offset", nargs="?", type=int, default=0, help="页码偏移量，默认0"
-    )
-    cmd_grp = parser.add_mutually_exclusive_group(required=True)
-    cmd_grp.add_argument("--get", action="store_true", help="提取outline")
-    cmd_grp.add_argument("--set", action="store_true", help="设置outline")
-    cmd_grp.add_argument("--rm", action="store_true", help="删除outline")
+
+    cmd_rm = subparsers.add_parser("rm", help="删除outline")
+    cmd_rm.add_argument("pdf_file_path", type=Path, help="输入PDF文件路径")
 
     args = parser.parse_args()
     pdf_file_path: Path = args.pdf_file_path
-    outline_txt_path: Optional[Path] = args.outline_file_path
-    page_offset: int = args.page_offset
 
-    if args.get:
-        outline = get_outline(pdf_file_path)
-        outline_txt_path = new_path_with_timestamp(pdf_file_path, ".txt")
-        if outline_txt_path.exists():
-            print(f"overwrite {outline_txt_path}")
-        outline_txt_path.write_text(outline, encoding="utf-8")
-        print(f"save as\n{outline_txt_path}")
-    elif args.set:
-        if outline_txt_path is None:
-            print("请指定outline文件路径")
-            return
-        output_path = new_path_with_timestamp(pdf_file_path)
-        set_outline(pdf_file_path, output_path, outline_txt_path, page_offset)
-        print(f"save as\n{output_path}")
-    elif args.rm:
-        output_path = new_path_with_timestamp(pdf_file_path)
-        remove_outline(pdf_file_path, output_path)
-        print(f"save as\n{output_path}")
-    else:
-        # should not reach here
-        parser.print_help()
+    match args.cmd:
+        case "get":
+            outline = get_outline(pdf_file_path)
+            outline_txt_path = new_path_with_timestamp(pdf_file_path, ".txt")
+            if outline_txt_path.exists():
+                print(f"overwrite {outline_txt_path}")
+            outline_txt_path.write_text(outline, encoding="utf-8")
+            print(f"save as\n{outline_txt_path}")
+        case "set":
+            outline_txt_path: Path = args.outline_file_path
+            page_offset: int = args.page_offset
+            output_path = new_path_with_timestamp(pdf_file_path)
+            set_outline(pdf_file_path, output_path, outline_txt_path, page_offset)
+            print(f"save as\n{output_path}")
+        case "rm":
+            output_path = new_path_with_timestamp(pdf_file_path)
+            remove_outline(pdf_file_path, output_path)
+            print(f"save as\n{output_path}")
+        case _:
+            # should not reach here
+            parser.print_help()
 
 
 def main():
