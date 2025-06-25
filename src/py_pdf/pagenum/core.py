@@ -96,26 +96,29 @@ def add_pagenum(
     reader.close()
 
 
-def main():
-    import sys
-
-    if len(sys.argv) == 2 and sys.argv[1] == "gencfg":
-        config_file_path = Path("config.toml")
-        config_file_path.write_text(default_config().to_toml(), encoding="utf-8")
-        print(f"Config file generated: {config_file_path}")
-        return
-
+def main() -> int:
     parser = argparse.ArgumentParser(
-        prog="addpn",
-        description=__doc__,
-        formatter_class=argparse.RawTextHelpFormatter,
+        prog="addpn", description=__doc__, formatter_class=argparse.RawTextHelpFormatter
     )
-    parser.add_argument("input_file", type=Path, help="input PDF file")
+
+    parser.add_argument("--gencfg", action="store_true", help="generate config file")
+    parser.add_argument("input_file", type=Path, nargs="?", help="input PDF file")
     parser.add_argument("--range", help="page range, format: a-b:A,c-d:C")
     parser.add_argument("--config-file")
 
     args = parser.parse_args()
-    input_file: Path = args.input_file
+
+    if args.gencfg:
+        config_file_path = Path("config.toml")
+        config_file_path.write_text(default_config().to_toml(), encoding="utf-8")
+        print(f"Config file generated: {config_file_path}")
+        return 0
+
+    input_file: Path | None = args.input_file
+    if input_file is None:
+        parser.print_help()
+        return 1
+
     range_: str | None = args.range
     config_file: str | None = args.config_file
 
@@ -131,6 +134,8 @@ def main():
     except Exception as e:
         print(f"Error: {e}")
 
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    exit(main())
