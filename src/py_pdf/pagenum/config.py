@@ -1,4 +1,3 @@
-import os.path as osp
 import re
 import tomllib
 from dataclasses import dataclass, field
@@ -75,11 +74,31 @@ class Config(DataClassTOMLMixin):
             self.font_name = register_font(self.font_name)
 
 
-def default_config() -> Config:
-    return Config()
+cfg_template = """\
+# 默认全文档添加页码，从 1 开始，递增编号，位置为页尾居中。
+# 页码范围格式为 a-b:A 表示从a到b标注页码，a 对应 A
+# 可以写多个页码范围，用空格或者逗号隔开，如 a-b:A,c-d:C
+page_range = ""
+# 页码格式，可以添加一些修饰，如 -{:d}-  第{:d}页
+num_fmt = "{:d}"
+
+font_name = "Times New Roman"
+font_size = 16
+
+# 页码位置，坐标原点在左下角
+[num_pos]
+# 从左到右 1/2 的位置
+x = 0.5
+# 从下到上 1/16 的位置
+y = 0.0625
+# 五种模式：center left right right1 right2
+# 这五种模式在缺省 x 时可以提供默认值
+# 另外 right1 奇数页码居右，righ2 偶数页码居右
+mode = "center"
+"""
 
 
-def _parse_config(config_str: str) -> Config:
+def parse_config(config_str: str) -> Config:
     def replace_hyphen_with_underscore(s: str) -> dict[str, Any]:
         sth = tomllib.loads(s)
         for k in tuple(sth.keys()):
@@ -88,12 +107,3 @@ def _parse_config(config_str: str) -> Config:
         return sth
 
     return Config.from_toml(config_str, replace_hyphen_with_underscore)
-
-
-def parse_config(sth: str) -> Config:
-    if not osp.exists(sth):
-        config = _parse_config(sth)
-    else:
-        with open(sth, encoding="utf-8") as f:
-            config = _parse_config(f.read())
-    return config

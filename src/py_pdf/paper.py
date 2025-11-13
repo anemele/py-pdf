@@ -9,8 +9,7 @@ from pathlib import Path
 
 from pypdf import PageObject, PdfReader, PdfWriter
 
-from .common import crop_page, merge_two_pages
-from .utils import new_path_with_timestamp
+from ._com import crop_page, merge_two_pages, new_path_with_timestamp
 
 
 def make_paper(

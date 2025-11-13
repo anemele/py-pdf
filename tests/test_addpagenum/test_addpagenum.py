@@ -1,12 +1,13 @@
 from pathlib import Path
 
+from py_pdf.pagenum.config import cfg_template
 from py_pdf.pagenum.core import add_pagenum
 
 this_dir = Path(__file__).parent
 
 
 def test_default_config():
-    add_pagenum("tests/sample/A4.pdf", this_dir / "test_1.pdf")
+    add_pagenum("tests/sample/A4.pdf", this_dir / "test_1.pdf", cfg_template)
 
 
 def test_config_by_string():
@@ -15,7 +16,9 @@ def test_config_by_string():
 
 def test_config_by_file():
     add_pagenum(
-        "tests/sample/A4.pdf", this_dir / "test_3.pdf", str(this_dir / "config.toml")
+        "tests/sample/A4.pdf",
+        this_dir / "test_3.pdf",
+        (this_dir / "config.toml").read_text(encoding="utf-8"),
     )
 
 

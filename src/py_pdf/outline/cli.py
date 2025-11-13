@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 
-from py_pdf.utils import new_path_with_timestamp
+from py_pdf._com import new_path_with_timestamp
 
 from .core import (
     get_outline,

@@ -8,8 +8,13 @@ from pathlib import Path
 
 from pypdf import PageObject, PdfReader, PdfWriter
 
-from .common import crop_page, merge_two_pages, sort_from_booklet, sort_to_booklet
-from .utils import new_path_with_timestamp
+from ._com import (
+    crop_page,
+    merge_two_pages,
+    new_path_with_timestamp,
+    sort_from_booklet,
+    sort_to_booklet,
+)
 
 
 def make_booklet(

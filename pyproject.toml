@@ -1,6 +1,6 @@
 [project]
 name = "py-pdf"
-version = "0.1.10"
+version = "0.1.11"
 description = "PDF processing toolkits"
 readme = "README.md"
 authors = [{ name = "Jason Swift", email = "anemele@outlook.com" }]
@@ -16,7 +16,7 @@ dependencies = [
 booklet = "py_pdf.booklet:main"
 statpage = "py_pdf.statpage:main"
 paper = "py_pdf.paper:main"
-addpn = "py_pdf.pagenum.core:main"
+addpn = "py_pdf.pagenum.cli:main"
 outline = "py_pdf.outline.cli:main"
 
 [build-system]
