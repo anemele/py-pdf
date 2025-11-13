@@ -26,7 +26,7 @@ def test_4():
     add_pagenum(
         "tests/sample/A4.pdf",
         this_dir / "test_4.pdf",
-        """num-pos = { mode = 'right1' }
+        """num-pos = { mode = 'stagger' }
 num-fmt = '-{:d}-'
 """,
     )
@@ -36,7 +36,7 @@ def test_5():
     add_pagenum(
         "tests/sample/A4.pdf",
         this_dir / "test_5.pdf",
-        """num-pos = { mode = 'right2' }
+        """num-pos = { mode = 'stagger' }
 num-fmt = '-{:d}-'
 """,
     )
@@ -46,7 +46,7 @@ def test_6():
     add_pagenum(
         "tests/sample/A4.pdf",
         this_dir / "test_6.pdf",
-        """num-pos = { mode = 'right2' }
+        """num-pos = { mode = 'stagger' }
 num-fmt = '第{:^3d}页'
 font-name = '楷体'
 font-size = 12
@@ -58,7 +58,7 @@ def test_7():
     add_pagenum(
         "tests/sample/A4.pdf",
         this_dir / "test_7.pdf",
-        """num-pos = { mode = 'right2' }
+        """num-pos = { mode = 'stagger' }
 num-fmt = 'no.{:d}'
 font-name = '未知'
 font-size = 12
@@ -70,7 +70,7 @@ def test_8():
     add_pagenum(
         "tests/sample/A4.pdf",
         this_dir / "test_8.pdf",
-        r"""num-pos = { mode = 'right2' }
+        r"""num-pos = { mode = 'stagger' }
 num-fmt = '第{:^3d}页'
 font-name = 'C:\Windows\Fonts\HGBTH_CNKI.TTF'
 font-size = 12
@@ -82,5 +82,5 @@ def test_9():
     add_pagenum(
         "tests/sample/A4.pdf",
         this_dir / "test_9.pdf",
-        """num-pos = { x=0.0625, y=0.9375, mode = 'right2' }""",
+        """num-pos = { x=0.0625, y=0.9375, mode = 'stagger' }""",
     )

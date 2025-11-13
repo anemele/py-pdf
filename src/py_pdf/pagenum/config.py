@@ -31,8 +31,7 @@ class NumMode(StrEnum):
     CENTER = "center"
     LEFT = "left"
     RIGHT = "right"
-    RIGHT1 = "right1"  # 奇数页码居右
-    RIGHT2 = "right2"  # 偶数页码居右
+    STAGGER = "stagger"
 
 
 @dataclass
@@ -52,8 +51,7 @@ class NumPos:
                     x = 1 / 2
                 case NumMode.LEFT:
                     x = 3 / 16
-                case NumMode.RIGHT | NumMode.RIGHT1 | NumMode.RIGHT2:
-                    # first x for right1 and right2
+                case NumMode.RIGHT | NumMode.STAGGER:
                     x = 13 / 16
             return x, y
 
@@ -74,9 +72,21 @@ class Config(DataClassTOMLMixin):
             self.font_name = register_font(self.font_name)
 
 
+def parse_config(config_str: str) -> Config:
+    def replace_hyphen_with_underscore(s: str) -> dict[str, Any]:
+        sth = tomllib.loads(s)
+        for k in tuple(sth.keys()):
+            if "-" in k:
+                sth[k.replace("-", "_")] = sth.pop(k)
+        return sth
+
+    return Config.from_toml(config_str, replace_hyphen_with_underscore)
+
+
 cfg_template = """\
 # 默认全文档添加页码，从 1 开始，递增编号，位置为页尾居中。
-# 页码范围格式为 a-b:A 表示从a到b标注页码，a 对应 A
+# 页码范围格式为 a-b:A 表示从 a 到 b 标注页码，a 对应 A
+# 其中小写字母是文件的页码数
 # 可以写多个页码范围，用空格或者逗号隔开，如 a-b:A,c-d:C
 page_range = ""
 # 页码格式，可以添加一些修饰，如 -{:d}-  第{:d}页
@@ -91,19 +101,9 @@ font_size = 16
 x = 0.5
 # 从下到上 1/16 的位置
 y = 0.0625
-# 五种模式：center left right right1 right2
-# 这五种模式在缺省 x 时可以提供默认值
-# 另外 right1 奇数页码居右，righ2 偶数页码居右
+# 四种模式：center left right stagger
+# 缺省 x 时可以提供默认值
+# stagger 是交错模式，即先距左 x ，后距右 x ……
+# 如果有多个页码范围，则每个范围都是先左后右。
 mode = "center"
 """
-
-
-def parse_config(config_str: str) -> Config:
-    def replace_hyphen_with_underscore(s: str) -> dict[str, Any]:
-        sth = tomllib.loads(s)
-        for k in tuple(sth.keys()):
-            if "-" in k:
-                sth[k.replace("-", "_")] = sth.pop(k)
-        return sth
-
-    return Config.from_toml(config_str, replace_hyphen_with_underscore)
